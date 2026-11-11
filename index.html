@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar de Vagas</title>
+<meta name="theme-color" content="#F3EFE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1613" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500;1,9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3EFE6; --paper:#FFFCF6; --ink:#13221D; --ink2:#3B4A44; --muted:#7C847F; --line:#E4DED1;
+  --green:#0E6B52; --green-soft:#DCEBE3; --mint:#2FBF8A;
+  --coral:#F2603F; --coral-soft:#FDE4DC;
+  --amber:#9A6412; --amber-soft:#F8EBD2;
+  --s5:#0E6B52; --s4:#2E9A72; --s3:#C9A227; --s2:#D9895B; --s1:#BDB6A8;
+  --shadow:0 1px 0 rgba(19,34,29,.04),0 8px 24px -14px rgba(19,34,29,.25);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0D1613; --paper:#14201C; --ink:#EAF1EC; --ink2:#C2CCC6; --muted:#86928C; --line:#23322D;
+  --green:#3DDC97; --green-soft:#173A2E; --mint:#3DDC97;
+  --coral:#FF7A5C; --coral-soft:#3A1F18;
+  --amber:#F2C46D; --amber-soft:#33280F;
+  --s5:#3DDC97; --s4:#2FAF7C; --s3:#E0B93A; --s2:#E39466; --s1:#4A5852;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 10px 28px -16px rgba(0,0,0,.7);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Manrope,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+/* Topo */
+.hero{padding:calc(env(safe-area-inset-top) + 22px) 0 14px;position:relative;overflow:hidden}
+.brand{display:flex;align-items:center;gap:12px}
+.scope{width:46px;height:46px;flex:none}
+.scope .sweep{transform-origin:50% 50%;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.scope .sweep{animation:none}}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.02em;margin:0;line-height:1}
+h1 em{font-style:italic;font-weight:500;color:var(--green)}
+.when{color:var(--muted);font-size:12.5px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.stat b{display:block;font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:600;line-height:1.1}
+.stat span{color:var(--muted);font-size:12px}
+.stat.hot b{color:var(--coral)}
+.stat.good b{color:var(--green)}
+
+/* Barra fixa */
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);padding:10px 0 10px;border-bottom:1px solid transparent;transition:border-color .2s}
+.bar.stuck{border-bottom-color:var(--line)}
+.seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:none;border-radius:11px;padding:8px 4px;font-size:13.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.seg button .n{font-size:11px;font-weight:700;background:var(--line);color:var(--ink2);border-radius:99px;padding:1px 7px;min-width:20px}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.seg button.on .n{background:var(--coral);color:#fff}
+.search{margin-top:8px;display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:0 12px}
+.search svg{flex:none;color:var(--muted)}
+.search input{flex:1;border:0;background:none;outline:none;padding:10px 0;font-size:15px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink2)}
+.chip.on{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+
+/* Cartões */
+main{padding:6px 0 10px}
+.card{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px 16px 14px 18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden;animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--sc)}
+.head{display:flex;gap:12px;align-items:flex-start}
+.ava{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:18px;color:#fff}
+.ttl{flex:1;min-width:0}
+.title{font-weight:700;font-size:16px;line-height:1.3;margin:0;letter-spacing:-.005em}
+.co{color:var(--ink2);font-size:13.5px;margin-top:2px}
+.loc{color:var(--muted);font-size:12.5px}
+.sig{flex:none;text-align:right}
+.bars{display:flex;gap:3px;align-items:flex-end;height:20px;justify-content:flex-end}
+.bars i{width:5px;border-radius:2px;background:var(--line)}
+.bars i:nth-child(1){height:6px}.bars i:nth-child(2){height:9px}.bars i:nth-child(3){height:12px}.bars i:nth-child(4){height:16px}.bars i:nth-child(5){height:20px}
+.bars i.on{background:var(--sc)}
+.sig small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sc);margin-top:3px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.tag{font-size:12px;font-weight:600;border-radius:8px;padding:3px 8px;background:var(--bg);color:var(--ink2)}
+.tag.new{background:var(--coral);color:#fff}
+.tag.new::before{content:"● ";font-size:9px;vertical-align:1px}
+.alerts{margin-top:10px;display:grid;gap:5px}
+.alert{display:flex;gap:7px;align-items:flex-start;background:var(--amber-soft);color:var(--amber);border-radius:10px;padding:6px 9px;font-size:12.5px;font-weight:600}
+.why{color:var(--muted);font-size:12.5px;margin-top:10px}
+details{margin-top:8px}
+summary{list-style:none;cursor:pointer;color:var(--green);font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"↓";transition:transform .2s}
+details[open] summary::after{transform:rotate(180deg)}
+.desc{white-space:pre-wrap;font-size:13.5px;color:var(--ink2);margin-top:8px;max-height:50vh;overflow:auto;border-top:1px dashed var(--line);padding-top:10px}
+.actions{display:flex;gap:8px;margin-top:14px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.go{flex:1;background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.ok{color:var(--green)}
+.btn.no{color:var(--muted)}
+.btn:active{transform:scale(.97)}
+.stamp{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;font-weight:600;border-radius:10px;padding:8px 10px}
+.stamp.a{background:var(--green-soft);color:var(--green)}
+.stamp.d{background:var(--bg);color:var(--muted)}
+.reason{display:none;margin-top:10px;gap:6px}
+.reason.show{display:flex}
+.reason input{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);outline:none}
+.reason input:focus{border-color:var(--green)}
+.quick{display:none;flex-wrap:wrap;gap:6px;margin-top:8px}
+.quick.show{display:flex}
+.quick button{border:1px dashed var(--line);background:none;border-radius:99px;padding:4px 10px;font-size:12px;color:var(--ink2)}
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty .big{font-family:Fraunces,Georgia,serif;font-style:italic;font-size:22px;color:var(--ink);margin-bottom:6px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:16px 0 36px;border-top:1px solid var(--line);margin-top:10px}
+footer .src{margin-bottom:6px}
+footer button{background:none;border:1px solid var(--line);color:var(--ink2);border-radius:10px;padding:6px 12px;margin:8px 3px 0;font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="brand">
+      <svg class="scope" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" style="stop-color:var(--mint)" stop-opacity="0"/><stop offset="1" style="stop-color:var(--mint)" stop-opacity=".55"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="22" style="fill:var(--green-soft)"/>
+        <circle cx="24" cy="24" r="15" fill="none" style="stroke:var(--green)" stroke-opacity=".25"/>
+        <circle cx="24" cy="24" r="8" fill="none" style="stroke:var(--green)" stroke-opacity=".25"/>
+        <g class="sweep"><path d="M24 24 L24 2 A22 22 0 0 1 43 13 Z" fill="url(#g)"/><line x1="24" y1="24" x2="43" y2="13" style="stroke:var(--green)" stroke-width="1.6"/></g>
+        <circle cx="33" cy="30" r="2.6" style="fill:var(--coral)"/>
+        <circle cx="24" cy="24" r="2" style="fill:var(--green)"/>
+      </svg>
+      <div>
+        <h1>Radar <em>de vagas</em></h1>
+        <div class="when" id="when">Sintonizando…</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat hot"><b id="stNew">–</b><span>novas em 48 h</span></div>
+      <div class="stat good"><b id="stStrong">–</b><span>sinal forte</span></div>
+      <div class="stat"><b id="stApplied">–</b><span>inscrições</span></div>
+    </div>
+  </section>
+</div>
+
+<div class="bar" id="bar">
+  <div class="wrap">
+    <div class="seg" id="tabs">
+      <button data-t="novas" class="on">Novas <span class="n" id="cNovas">0</span></button>
+      <button data-t="todas">Abertas <span class="n" id="cTodas">0</span></button>
+      <button data-t="inscritas">Inscrevi <span class="n" id="cInsc">0</span></button>
+      <button data-t="descartadas">Fora <span class="n" id="cDesc">0</span></button>
+    </div>
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Cargo, empresa ou cidade" autocomplete="off">
+    </label>
+    <div class="chips" id="chips">
+      <button class="chip" data-min="4">Sinal forte</button>
+      <button class="chip on" data-min="3">Bom ou mais</button>
+      <button class="chip" data-min="1">Todos</button>
+      <span class="sep"></span>
+      <button class="chip" data-model="remoto">Remoto</button>
+      <button class="chip" data-model="híbrido">Híbrido</button>
+      <button class="chip" data-model="presencial">Presencial</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <main id="list"></main>
+  <footer>
+    <div class="src" id="foot"></div>
+    <div>Inscrições e descartes ficam salvos neste aparelho.</div>
+    <button id="exp">Copiar backup</button><button id="imp">Restaurar backup</button>
+  </footer>
+</div>
+
+<script>
+const KEY = 'radar-marcas-v1';
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+let marks = store.get(KEY, {}), data = { jobs: [] }, tab = 'novas', min = 3, model = '';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtAge = iso => { if (!iso) return null; const d = Math.floor((Date.now() - Date.parse(iso)) / 864e5); return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : `há ${d} dias`; };
+const fmtWhen = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+const isNew = j => !marks[j.id] && Date.now() - Date.parse(j.firstSeenAt) < 2 * 864e5;
+const SRC = { gupy: 'Gupy', linkedin: 'LinkedIn', greenhouse: 'Greenhouse', lever: 'Lever', ashby: 'Ashby', inhire: 'InHire' };
+const SIG = { 5: 'Forte', 4: 'Bom', 3: 'Médio', 2: 'Fraco', 1: 'Ruído' };
+const AVA = ['#0E6B52', '#2B5D8A', '#8A4B2B', '#6B4C9A', '#A0522D', '#2F7F7A', '#7A6A1E', '#9A3B57'];
+const avaColor = s => { let h = 0; for (const c of s || '?') h = (h * 31 + c.charCodeAt(0)) >>> 0; return AVA[h % AVA.length]; };
+const QUICK = ['Presencial longe', 'Salário baixo', 'Nível abaixo', 'Fora da área', 'Empresa não me interessa'];
+
+function inTab(j, t) {
+  const m = marks[j.id];
+  if (t === 'inscritas') return m?.s === 'a';
+  if (t === 'descartadas') return m?.s === 'd';
+  if (m) return false;
+  return t === 'todas' || isNew(j);
+}
+function visible() {
+  const q = $('q').value.trim().toLowerCase();
+  const marked = tab === 'inscritas' || tab === 'descartadas';
+  return data.jobs.filter(j => inTab(j, tab)
+    && (marked || j.stars >= min)
+    && (!model || j.model === model)
+    && (!q || `${j.title} ${j.company} ${j.location}`.toLowerCase().includes(q)));
+}
+
+function card(j, i) {
+  const m = marks[j.id], age = fmtAge(j.publishedAt), sc = `var(--s${j.stars})`;
+  const bars = [1, 2, 3, 4, 5].map(n => `<i class="${n <= j.stars ? 'on' : ''}"></i>`).join('');
+  return `<article class="card" data-id="${esc(j.id)}" style="--sc:${sc};animation-delay:${Math.min(i, 8) * 30}ms">
+    <div class="head">
+      <div class="ava" style="background:${avaColor(j.company)}">${esc((j.company || '?').trim()[0].toUpperCase())}</div>
+      <div class="ttl"><p class="title">${esc(j.title)}</p><div class="co">${esc(j.company)}</div>${j.location ? `<div class="loc">${esc(j.location)}</div>` : ''}</div>
+      <div class="sig" title="Encaixe ${j.stars} de 5"><div class="bars">${bars}</div><small>${SIG[j.stars]}</small></div>
+    </div>
+    <div class="tags">${isNew(j) ? '<span class="tag new">nova</span>' : ''}<span class="tag">${SRC[j.source] || esc(j.source)}</span>${j.model ? `<span class="tag">${esc(j.model)}</span>` : ''}${age ? `<span class="tag">${age}</span>` : ''}</div>
+    ${j.alerts.length ? `<div class="alerts">${j.alerts.map(a => `<div class="alert"><span>⚠</span><span>${esc(a)}</span></div>`).join('')}</div>` : ''}
+    <div class="why">${j.reasons.map(esc).join(' · ')}</div>
+    <details><summary>Ler descrição</summary><div class="desc">${esc(j.description)}</div></details>
+    ${m ? `<div class="stamp ${m.s}">${m.s === 'a' ? '✓ Inscrição enviada' : '✕ Descartada'} · ${fmtWhen(m.at)}${m.r ? ' · ' + esc(m.r) : ''}</div>` : ''}
+    <div class="actions">
+      <a class="btn go" href="${esc(j.url)}" target="_blank" rel="noopener">Ver vaga ↗</a>
+      ${m ? `<button class="btn" data-a="undo">Desfazer</button>` : `<button class="btn ok" data-a="apply" aria-label="Inscrevi">✓ Inscrevi</button><button class="btn no" data-a="discard" aria-label="Descartar">✕</button>`}
+    </div>
+    <div class="reason"><input placeholder="Por que descartar?" maxlength="120"><button class="btn" data-a="confirm">OK</button></div>
+    <div class="quick">${QUICK.map(r => `<button data-a="pick">${r}</button>`).join('')}</div>
+  </article>`;
+}
+
+function render() {
+  const v = visible();
+  const msg = { novas: ['Céu limpo.', 'Nenhuma vaga nova nas últimas 48 horas. Veja Abertas.'], todas: ['Nada por aqui.', 'Tente um sinal mais baixo ou outro filtro.'], inscritas: ['Nenhuma inscrição ainda.', 'Toque em ✓ Inscrevi depois de se candidatar.'], descartadas: ['Nada descartado.', 'Vagas que você tirar do radar aparecem aqui.'] }[tab];
+  $('list').innerHTML = v.length ? v.map(card).join('') : `<div class="empty"><div class="big">${msg[0]}</div>${msg[1]}</div>`;
+  const open = data.jobs.filter(j => !marks[j.id]);
+  const count = t => data.jobs.filter(j => inTab(j, t)).length;
+  $('cNovas').textContent = count('novas'); $('cTodas').textContent = count('todas');
+  $('cInsc').textContent = count('inscritas'); $('cDesc').textContent = count('descartadas');
+  $('stNew').textContent = open.filter(isNew).length;
+  $('stStrong').textContent = open.filter(j => j.stars >= 4).length;
+  $('stApplied').textContent = count('inscritas');
+}
+
+function save() { store.set(KEY, marks); render(); }
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const el = b.closest('.card'), id = el.dataset.id, a = b.dataset.a, input = el.querySelector('.reason input');
+  if (a === 'apply') { marks[id] = { s: 'a', at: new Date().toISOString() }; save(); }
+  else if (a === 'discard') { el.querySelector('.reason').classList.add('show'); el.querySelector('.quick').classList.add('show'); input.focus(); }
+  else if (a === 'pick') { input.value = b.textContent; input.focus(); }
+  else if (a === 'confirm') { const r = input.value.trim(); if (!r) { input.placeholder = 'Escreva o motivo para descartar'; input.focus(); return; } marks[id] = { s: 'd', at: new Date().toISOString(), r }; save(); }
+  else if (a === 'undo') { delete marks[id]; save(); }
+});
+$('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.reason input')) e.target.closest('.card').querySelector('[data-a="confirm"]').click(); });
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; tab = b.dataset.t; [...$('tabs').children].forEach(x => x.classList.toggle('on', x === b)); render(); scrollTo({ top: $('bar').offsetTop, behavior: 'smooth' }); });
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  if (b.dataset.min) { min = +b.dataset.min; $('chips').querySelectorAll('[data-min]').forEach(x => x.classList.toggle('on', x === b)); }
+  else { model = model === b.dataset.model ? '' : b.dataset.model; $('chips').querySelectorAll('[data-model]').forEach(x => x.classList.toggle('on', x.dataset.model === model)); }
+  render();
+});
+$('q').addEventListener('input', render);
+new IntersectionObserver(([en]) => $('bar').classList.toggle('stuck', !en.isIntersecting), { rootMargin: '-1px 0px 0px 0px' }).observe(document.querySelector('.hero'));
+$('exp').onclick = async () => { const t = JSON.stringify(marks); try { await navigator.clipboard.writeText(t); alert('Backup copiado. Guarde num lugar seguro, como suas notas.'); } catch { prompt('Copie o backup:', t); } };
+$('imp').onclick = () => { const t = prompt('Cole o backup:'); if (!t) return; try { marks = { ...marks, ...JSON.parse(t) }; save(); } catch { alert('Backup inválido.'); } };
+
+fetch('vagas.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
+  data = d;
+  $('when').textContent = `Varredura de ${fmtWhen(d.generatedAt)}`;
+  $('foot').textContent = 'Última coleta · ' + Object.entries(d.sources || {}).map(([k, v]) => `${SRC[k] || k} ${v.lastRunAt ? fmtWhen(v.lastRunAt) : '—'}${v.errors ? ` (${v.errors} avisos)` : ''}`).join(' · ');
+  render();
+}).catch(() => { $('when').textContent = 'Sem sinal agora. Tente de novo em instantes.'; $('list').innerHTML = '<div class="empty"><div class="big">Sem sinal.</div>Não consegui carregar as vagas.</div>'; });
+</script>
+</body>
+</html>
