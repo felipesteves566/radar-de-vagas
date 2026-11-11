@@ -119,6 +119,45 @@ details[open] summary::after{transform:rotate(180deg)}
 .empty .big{font-family:Fraunces,Georgia,serif;font-style:italic;font-size:22px;color:var(--ink);margin-bottom:6px}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:16px 0 36px;border-top:1px solid var(--line);margin-top:10px}
 footer .src{margin-bottom:6px}
+/* Ajustar busca */
+.gear{flex:none;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:9px 12px;font-weight:700;font-size:13px;color:var(--green)}
+.veil{position:fixed;inset:0;z-index:20;background:rgba(10,20,16,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+.veil.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:92vh;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:10px 0 calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px -10px rgba(0,0,0,.35)}
+.sheet.show{transform:none}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.sheet h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:24px;margin:0 0 2px}
+.sheet h2 em{font-style:italic;font-weight:500;color:var(--green)}
+.sheet .lead{color:var(--muted);font-size:13px;margin:0 0 14px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.box h3{margin:0 0 10px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.terms{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.term{display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:var(--green);border-radius:99px;padding:6px 6px 6px 12px;font-weight:700;font-size:13.5px}
+.term button{border:0;background:var(--paper);color:var(--green);width:22px;height:22px;border-radius:99px;font-size:13px;line-height:1}
+.addrow{display:flex;gap:6px}
+.addrow input,.field{flex:1;min-width:0;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);outline:none}
+.addrow input:focus,.field:focus{border-color:var(--green)}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.row+.row{border-top:1px dashed var(--line)}
+.row small{display:block;color:var(--muted);font-size:12px}
+.sw{position:relative;width:46px;height:28px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s}
+.sw span::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}
+.sw input:checked+span{background:var(--green)}
+.sw input:checked+span::after{transform:translateX(18px)}
+.hint{color:var(--muted);font-size:12px;margin:8px 0 0}
+.save{width:100%;margin-top:6px;padding:14px;font-size:15px}
+.status{margin-top:10px;font-size:13px;font-weight:600;border-radius:12px;padding:10px 12px;display:none}
+.status.show{display:block}
+.status.ok{background:var(--green-soft);color:var(--green)}
+.status.err{background:var(--coral-soft);color:var(--coral)}
+.status a{color:inherit}
+.steps{margin:6px 0 10px;padding-left:18px;font-size:13px;color:var(--ink2)}
+.steps li{margin:4px 0}
+.steps a{color:var(--green);font-weight:700}
+.link{background:none;border:0;color:var(--muted);font-size:12px;text-decoration:underline;padding:6px 0;margin-top:4px}
 footer button{background:none;border:1px solid var(--line);color:var(--ink2);border-radius:10px;padding:6px 12px;margin:8px 3px 0;font-size:12px;font-weight:600}
 </style>
 </head>
@@ -135,10 +174,14 @@ footer button{background:none;border:1px solid var(--line);color:var(--ink2);bor
         <circle cx="33" cy="30" r="2.6" style="fill:var(--coral)"/>
         <circle cx="24" cy="24" r="2" style="fill:var(--green)"/>
       </svg>
-      <div>
+      <div style="flex:1;min-width:0">
         <h1>Radar <em>de vagas</em></h1>
         <div class="when" id="when">Sintonizando…</div>
       </div>
+      <button class="gear" id="openCfg" aria-label="Ajustar busca">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        <span>Busca</span>
+      </button>
     </div>
     <div class="stats">
       <div class="stat hot"><b id="stNew">–</b><span>novas em 48 h</span></div>
@@ -180,6 +223,61 @@ footer button{background:none;border:1px solid var(--line);color:var(--ink2);bor
     <button id="exp">Copiar backup</button><button id="imp">Restaurar backup</button>
   </footer>
 </div>
+
+<div class="veil" id="veil"></div>
+<section class="sheet" id="sheet" role="dialog" aria-label="Ajustar busca">
+  <div class="wrap">
+    <div class="grab"></div>
+    <h2>Ajustar <em>busca</em></h2>
+    <p class="lead">As mudanças valem a partir da próxima varredura.</p>
+
+    <div id="connect" style="display:none">
+      <div class="box">
+        <h3>Conectar ao GitHub (uma vez)</h3>
+        <p class="hint" style="margin:0 0 6px">Para o app gravar a busca no seu repositório, ele precisa de uma chave. Ela fica salva só neste aparelho.</p>
+        <ol class="steps">
+          <li>Abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">criar chave no GitHub</a>.</li>
+          <li>Nome: <b>Radar</b>. Expiração: <b>1 ano</b>.</li>
+          <li>Repository access: <b>Only select repositories</b> → <b id="repoName">radar-de-vagas</b>.</li>
+          <li>Permissions → Repository: <b>Contents: Read and write</b> e <b>Actions: Read and write</b>.</li>
+          <li>Clique em <b>Generate token</b>, copie e cole aqui:</li>
+        </ol>
+        <input class="field" id="tok" type="password" placeholder="github_pat_…" autocomplete="off">
+        <div class="hint">Repositório: <input class="field" id="repo" style="margin-top:6px" placeholder="usuario/radar-de-vagas"></div>
+        <button class="btn go save" id="connectBtn">Conectar</button>
+        <div class="status" id="cStatus"></div>
+      </div>
+    </div>
+
+    <div id="editor" style="display:none">
+      <div class="box">
+        <h3>O que procurar</h3>
+        <div class="terms" id="terms"></div>
+        <div class="addrow"><input id="newTerm" placeholder="Ex.: gerente de marketplace" maxlength="60"><button class="btn" id="addTerm">Adicionar</button></div>
+        <p class="hint">Termos curtos trazem mais vagas. A Gupy procura o termo no título; o LinkedIn faz busca mais ampla.</p>
+      </div>
+      <div class="box">
+        <h3>Onde procurar</h3>
+        <div class="row"><div><b>Gupy</b><small>Vagas de empresas brasileiras</small></div><label class="sw"><input type="checkbox" id="fGupy"><span></span></label></div>
+        <div class="row"><div><b>LinkedIn</b><small>Mais volume; às vezes bloqueia</small></div><label class="sw"><input type="checkbox" id="fLinkedin"><span></span></label></div>
+      </div>
+      <div class="box">
+        <h3>Publicadas nos últimos</h3>
+        <div class="opts" id="ageOpts"><button class="chip" data-v="3">3 dias</button><button class="chip" data-v="7">7 dias</button><button class="chip" data-v="15">15 dias</button><button class="chip" data-v="30">30 dias</button><button class="chip" data-v="">Qualquer data</button></div>
+      </div>
+      <div class="box">
+        <h3>Modelo e local (LinkedIn)</h3>
+        <div class="opts" id="modelOpts"><button class="chip" data-v="">Qualquer</button><button class="chip" data-v="remoto">Remoto</button><button class="chip" data-v="híbrido">Híbrido</button><button class="chip" data-v="presencial">Presencial</button></div>
+        <input class="field" id="loc" style="margin-top:10px" placeholder="Brazil, São Paulo, Campinas…">
+        <p class="hint">Na Gupy, use os filtros da tela principal para modelo e cidade.</p>
+      </div>
+      <button class="btn go save" id="saveCfg">Salvar e buscar agora</button>
+      <div class="status" id="sStatus"></div>
+      <button class="link" id="disconnect">Desconectar este aparelho</button>
+    </div>
+    <button class="btn save" id="closeCfg" style="margin-top:8px">Fechar</button>
+  </div>
+</section>
 
 <script>
 const KEY = 'radar-marcas-v1';
@@ -270,6 +368,75 @@ $('q').addEventListener('input', render);
 new IntersectionObserver(([en]) => $('bar').classList.toggle('stuck', !en.isIntersecting), { rootMargin: '-1px 0px 0px 0px' }).observe(document.querySelector('.hero'));
 $('exp').onclick = async () => { const t = JSON.stringify(marks); try { await navigator.clipboard.writeText(t); alert('Backup copiado. Guarde num lugar seguro, como suas notas.'); } catch { prompt('Copie o backup:', t); } };
 $('imp').onclick = () => { const t = prompt('Cole o backup:'); if (!t) return; try { marks = { ...marks, ...JSON.parse(t) }; save(); } catch { alert('Backup inválido.'); } };
+
+// ---------- Ajustar busca (grava config/busca.json no repositório) ----------
+const GH = 'radar-github-v1', CFG_PATH = 'config/busca.json', WORKFLOW = 'radar-celular.yml';
+const guessRepo = () => { const user = location.hostname.endsWith('.github.io') ? location.hostname.split('.')[0] : ''; const name = location.pathname.split('/').filter(Boolean)[0] || 'radar-de-vagas'; return user ? `${user}/${name}` : ''; };
+let gh = store.get(GH, null), cfg = null, cfgSha = null;
+const api = async (path, opts = {}) => {
+  const r = await fetch(`https://api.github.com/repos/${gh.repo}${path}`, { ...opts, headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${gh.token}`, 'X-GitHub-Api-Version': '2022-11-28', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+  if (!r.ok) { const e = new Error(r.status === 401 ? 'Chave inválida ou expirada.' : r.status === 403 ? 'A chave não tem permissão (confira Contents e Actions: Read and write).' : r.status === 404 ? 'Repositório ou arquivo não encontrado. Confira o nome do repositório.' : `GitHub respondeu ${r.status}.`); e.status = r.status; throw e; }
+  return r.status === 204 ? null : r.json();
+};
+const b64decode = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, '')), c => c.charCodeAt(0)));
+const b64encode = s => { let bin = ''; new TextEncoder().encode(s).forEach(b => bin += String.fromCharCode(b)); return btoa(bin); };
+const say = (id, msg, ok) => { const el = $(id); el.innerHTML = msg; el.className = `status show ${ok ? 'ok' : 'err'}`; };
+
+function openSheet() { $('veil').classList.add('show'); $('sheet').classList.add('show'); document.body.style.overflow = 'hidden'; showPanel(); }
+function closeSheet() { $('veil').classList.remove('show'); $('sheet').classList.remove('show'); document.body.style.overflow = ''; }
+$('openCfg').onclick = openSheet; $('closeCfg').onclick = closeSheet; $('veil').onclick = closeSheet;
+
+async function showPanel() {
+  $('sStatus').className = 'status'; $('cStatus').className = 'status';
+  if (!gh) { $('connect').style.display = ''; $('editor').style.display = 'none'; $('repo').value = guessRepo(); $('repoName').textContent = ($('repo').value.split('/')[1] || 'radar-de-vagas'); return; }
+  $('connect').style.display = 'none'; $('editor').style.display = '';
+  try { await loadCfg(); } catch (e) { say('sStatus', e.message, false); }
+}
+async function loadCfg() {
+  const f = await api(`/contents/${CFG_PATH}`);
+  cfgSha = f.sha; cfg = JSON.parse(b64decode(f.content)); drawCfg();
+}
+function drawCfg() {
+  $('terms').innerHTML = cfg.termos.map((t, i) => `<span class="term">${esc(t)}<button data-i="${i}" aria-label="Remover ${esc(t)}">✕</button></span>`).join('') || '<span class="hint">Nenhum termo. Adicione pelo menos um.</span>';
+  $('fGupy').checked = !!cfg.fontes?.gupy; $('fLinkedin').checked = !!cfg.fontes?.linkedin;
+  const age = cfg.idadeMaximaDias == null ? '' : String(cfg.idadeMaximaDias);
+  $('ageOpts').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.v === age));
+  $('modelOpts').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.v === (cfg.modelo || '')));
+  $('loc').value = cfg.localidade || '';
+}
+$('terms').onclick = e => { const b = e.target.closest('button[data-i]'); if (!b) return; cfg.termos.splice(+b.dataset.i, 1); drawCfg(); };
+const addTerm = () => { const v = $('newTerm').value.trim(); if (!v) return; if (!cfg.termos.some(t => t.toLowerCase() === v.toLowerCase())) cfg.termos.push(v); $('newTerm').value = ''; drawCfg(); $('newTerm').focus(); };
+$('addTerm').onclick = addTerm; $('newTerm').onkeydown = e => { if (e.key === 'Enter') addTerm(); };
+$('ageOpts').onclick = e => { const c = e.target.closest('.chip'); if (!c) return; cfg.idadeMaximaDias = c.dataset.v ? +c.dataset.v : null; drawCfg(); };
+$('modelOpts').onclick = e => { const c = e.target.closest('.chip'); if (!c) return; cfg.modelo = c.dataset.v || null; drawCfg(); };
+
+$('saveCfg').onclick = async () => {
+  if (!cfg) return;
+  cfg.fontes = { ...cfg.fontes, gupy: $('fGupy').checked, linkedin: $('fLinkedin').checked };
+  cfg.localidade = $('loc').value.trim() || null;
+  if (!cfg.termos.length) return say('sStatus', 'Adicione pelo menos um termo de busca.', false);
+  if (!cfg.fontes.gupy && !cfg.fontes.linkedin && !Object.values(cfg.empresas || {}).some(l => l.length)) return say('sStatus', 'Ligue pelo menos uma fonte.', false);
+  const btn = $('saveCfg'); btn.disabled = true; btn.textContent = 'Salvando…';
+  try {
+    const put = () => api(`/contents/${CFG_PATH}`, { method: 'PUT', body: JSON.stringify({ message: 'chore: ajusta busca pelo app', content: b64encode(JSON.stringify(cfg, null, 2) + '\n'), sha: cfgSha }) });
+    let res; try { res = await put(); } catch (e) { if (e.status !== 409) throw e; const keep = cfg; await loadCfg(); cfg = keep; res = await put(); }
+    cfgSha = res.content.sha;
+    const repoInfo = await api('');
+    let started = true;
+    try { await api(`/actions/workflows/${WORKFLOW}/dispatches`, { method: 'POST', body: JSON.stringify({ ref: repoInfo.default_branch }) }); } catch { started = false; }
+    say('sStatus', started ? `Busca salva. Nova varredura iniciada: em cerca de 10 a 20 minutos as vagas aparecem aqui. <a href="https://github.com/${gh.repo}/actions" target="_blank" rel="noopener">Acompanhar</a>` : 'Busca salva. Ela vale na próxima varredura automática (a chave não tem permissão de Actions para começar agora).', true);
+  } catch (e) { say('sStatus', e.message, false); }
+  btn.disabled = false; btn.textContent = 'Salvar e buscar agora';
+};
+
+$('connectBtn').onclick = async () => {
+  const token = $('tok').value.trim(), repo = $('repo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, '');
+  if (!token || !/^[\w.-]+\/[\w.-]+$/.test(repo)) return say('cStatus', 'Cole a chave e confira o repositório (usuario/nome).', false);
+  gh = { token, repo };
+  try { await api(`/contents/${CFG_PATH}`); store.set(GH, gh); $('tok').value = ''; showPanel(); }
+  catch (e) { gh = null; say('cStatus', e.message, false); }
+};
+$('disconnect').onclick = () => { if (!confirm('Remover a chave do GitHub deste aparelho?')) return; try { localStorage.removeItem(GH); } catch {} gh = null; cfg = null; showPanel(); };
 
 fetch('vagas.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
   data = d;
