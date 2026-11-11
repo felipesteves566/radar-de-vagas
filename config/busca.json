@@ -1,0 +1,10 @@
+{
+  "termos": ["coordenador e-commerce", "gerente e-commerce", "marketplace", "e-commerce", "ecommerce"],
+  "localidade": "Brazil",
+  "modelo": null,
+  "idadeMaximaDias": 30,
+  "detalhesNovosPorFonte": 200,
+  "prazoFonteSegundos": 900,
+  "fontes": { "gupy": true, "linkedin": true },
+  "empresas": { "greenhouse": [], "lever": [], "ashby": [], "inhire": [] }
+}
