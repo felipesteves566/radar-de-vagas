@@ -1,0 +1,74 @@
+name: radar-celular
+
+# Coleta as vagas 3x ao dia e publica a página do radar no GitHub Pages.
+# Horários em UTC: 09h, 15h e 21h = 06h, 12h e 18h de Brasília.
+on:
+  schedule:
+    - cron: '17 9,15,21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: radar-celular
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Definir pasta de dados
+        run: echo "RADAR_DATA_DIR=$RUNNER_TEMP/radar-dados" >> "$GITHUB_ENV"
+
+      - name: Recuperar estado anterior
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/radar-dados
+          key: radar-estado-${{ github.run_id }}
+          restore-keys: radar-estado-
+
+      - name: Aplicar busca do repositório
+        run: |
+          mkdir -p "$RADAR_DATA_DIR"
+          cp config/busca.json "$RADAR_DATA_DIR/busca.json"
+          rm -f "$RADAR_DATA_DIR/estado.lock"
+
+      - name: Coletar vagas
+        run: node bin/radar.mjs collect || echo "Coleta terminou com avisos."
+        timeout-minutes: 40
+
+      - name: Gerar página
+        run: node scripts/build-site.mjs --out site
+
+      - name: Guardar estado
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/radar-dados
+          key: radar-estado-${{ github.run_id }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publicar:
+    needs: coletar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
