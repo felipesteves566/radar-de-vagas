@@ -1,10 +1,24 @@
 {
-  "termos": ["coordenador e-commerce", "gerente e-commerce", "marketplace", "e-commerce", "ecommerce"],
-  "localidade": "Brazil",
+  "termos": [
+    "coordenador e-commerce",
+    "gerente e-commerce",
+    "marketplace",
+    "e-commerce",
+    "ecommerce"
+  ],
+  "localidade": "Americana",
   "modelo": null,
   "idadeMaximaDias": 30,
   "detalhesNovosPorFonte": 200,
   "prazoFonteSegundos": 900,
-  "fontes": { "gupy": true, "linkedin": true },
-  "empresas": { "greenhouse": [], "lever": [], "ashby": [], "inhire": [] }
+  "fontes": {
+    "gupy": true,
+    "linkedin": true
+  },
+  "empresas": {
+    "greenhouse": [],
+    "lever": [],
+    "ashby": [],
+    "inhire": []
+  }
 }
